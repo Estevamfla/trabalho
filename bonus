@@ -1,0 +1,190 @@
+import os
+
+class ObraDeArte:
+    def __init__(self, titulo, data_criacao, tema, estilo, descricao, tecnica, autor, localizacao):
+        self.titulo = titulo
+        self.data_criacao = data_criacao
+        self.tema = tema
+        self.estilo = estilo
+        self.descricao = descricao
+        self.tecnica = tecnica
+        self.autor = autor
+        self.localizacao = localizacao
+    
+    def __repr__(self):
+        return f"ObraDeArte('{self.titulo}', '{self.data_criacao}', '{self.autor}')"
+    
+    def to_dict(self):
+        return {
+            'titulo': self.titulo,
+            'data_criacao': self.data_criacao,
+            'tema': self.tema,
+            'estilo': self.estilo,
+            'descricao': self.descricao,
+            'tecnica': self.tecnica,
+            'autor': self.autor,
+            'localizacao': self.localizacao
+        }
+    
+    @classmethod
+    def from_dict(cls, d):
+        try:
+            titulo = d['titulo']
+            data_criacao = d['data_criacao']
+            tema = d['tema']
+            estilo = d['estilo']
+            descricao = d['descricao']
+            tecnica = d['tecnica']
+            autor = d['autor']
+            localizacao = d['localizacao']
+            return cls(titulo, data_criacao, tema, estilo, descricao, tecnica, autor, localizacao)
+        except KeyError as e:
+            raise ValueError(f"Dicionário inválido para criar ObraDeArte: chave faltando ({e}).")
+        except TypeError as e:
+            raise ValueError(f"Tipo inválido encontrado ao criar ObraDeArte: {e}")
+
+class Artista:
+    def __init__(self, nome, data_nascimento, local_nascimento, biografia, estilos):
+        self.nome = nome
+        self.data_nascimento = data_nascimento
+        self.local_nascimento = local_nascimento
+        self.biografia = biografia
+        self.estilos = estilos
+    
+    def __repr__(self):
+        return f"Artista('{self.nome}', '{self.data_nascimento}', '{self.local_nascimento}')"
+    
+    def to_dict(self):
+        return {
+            'nome': self.nome,
+            'data_nascimento': self.data_nascimento,
+            'local_nascimento': self.local_nascimento,
+            'biografia': self.biografia,
+            'estilos': self.estilos
+        }
+    
+    @classmethod
+    def from_dict(cls, d):
+        try:
+            nome = d['nome']
+            data_nascimento = d['data_nascimento']
+            local_nascimento = d['local_nascimento']
+            biografia = d['biografia']
+            estilos = d['estilos']
+            return cls(nome, data_nascimento, local_nascimento, biografia, estilos)
+        except KeyError as e:
+            raise ValueError(f"Dicionário inválido para criar Artista: chave faltando ({e}).")
+        except TypeError as e:
+            raise ValueError(f"Tipo inválido encontrado ao criar Artista: {e}")
+
+class EstiloArtistico:
+    def __init__(self, denominacao, periodo, descricao, escola):
+        self.denominacao = denominacao
+        self.periodo = periodo
+        self.descricao = descricao
+        self.escola = escola
+    
+    def __repr__(self):
+        return f"EstiloArtistico('{self.denominacao}', '{self.periodo}', '{self.escola}')"
+    
+    def to_dict(self):
+        return {
+            'denominacao': self.denominacao,
+            'periodo': self.periodo,
+            'descricao': self.descricao,
+            'escola': self.escola
+        }
+    
+    @classmethod
+    def from_dict(cls, d):
+        try:
+            denominacao = d['denominacao']
+            periodo = d['periodo']
+            descricao = d['descricao']
+            escola = d['escola']
+            return cls(denominacao, periodo, descricao, escola)
+        except KeyError as e:
+            raise ValueError(f"Dicionário inválido para criar EstiloArtistico: chave faltando ({e}).")
+        except TypeError as e:
+            raise ValueError(f"Tipo inválido encontrado ao criar EstiloArtistico: {e}")
+
+def merge_sort_obras(obras):
+    if len(obras) <= 1:
+        return obras
+    
+    meio = len(obras) // 2
+    esquerda = merge_sort_obras(obras[:meio])
+    direita = merge_sort_obras(obras[meio:])
+    
+    return merge(esquerda, direita)
+
+def merge(esquerda, direita):
+    resultado = []
+    i = j = 0
+    
+    while i < len(esquerda) and j < len(direita):
+        if esquerda[i].titulo < direita[j].titulo:
+            resultado.append(esquerda[i])
+            i += 1
+        else:
+            resultado.append(direita[j])
+            j += 1
+    
+    resultado.extend(esquerda[i:])
+    resultado.extend(direita[j:])
+    
+    return resultado
+
+def escrever_obras_em_arquivo(obras, nome_arquivo):
+    try:
+        with open(nome_arquivo, 'w', encoding='utf-8') as arquivo:
+            for obra in obras:
+                arquivo.write(f"{obra.titulo};{obra.data_criacao};{obra.tema};{obra.estilo};{obra.descricao};{obra.tecnica};{obra.autor};{obra.localizacao}\n")
+        print(f"Obras de arte salvas em '{nome_arquivo}' com sucesso.")
+    except IOError as e:
+        print(f"Erro ao escrever no arquivo: {e}")
+
+def ler_obras_de_arquivo(nome_arquivo):
+    obras = []
+    try:
+        if os.path.exists(nome_arquivo):
+            with open(nome_arquivo, 'r', encoding='utf-8') as arquivo:
+                for linha in arquivo:
+                    dados = linha.strip().split(';')
+                    if len(dados) == 8:
+                        titulo, data_criacao, tema, estilo, descricao, tecnica, autor, localizacao = dados
+                        obras.append(ObraDeArte(titulo, data_criacao, tema, estilo, descricao, tecnica, autor, localizacao))
+                    else:
+                        print(f"Dados inválidos na linha: {linha}")
+            print(f"Obras de arte lidas de '{nome_arquivo}' com sucesso.")
+        else:
+            print(f"Arquivo '{nome_arquivo}' não encontrado.")
+    except IOError as e:
+        print(f"Erro ao ler o arquivo: {e}")
+    except ValueError as e:
+        print(f"Erro ao processar os dados do arquivo: {e}")
+    except Exception as e:
+        print(f"Erro desconhecido: {e}")
+    
+    return obras
+
+
+if __name__ == "__main__":
+
+    artista1 = Artista("Leonardo da Vinci", "1452", "Vinci, Itália", "Pioneiro do Renascimento italiano", ["Renascimento"])
+    estilo1 = EstiloArtistico("Renascimento", "Século XIV - XVI", "Movimento cultural que marcou a transição do período medieval para o moderno", "Escola Florentina")
+    
+    obra1 = ObraDeArte("Mona Lisa", "1503", "Retrato", estilo1, "Famosa obra de Leonardo da Vinci", "Óleo sobre madeira", artista1, "Sala 2")
+    obra2 = ObraDeArte("A Última Ceia", "1495", "Religioso", estilo1, "Fresco representando a ceia de Jesus com seus apóstolos", "Fresco", artista1, "Sala 1")
+    
+
+    obras = [obra1, obra2]
+    
+    obras_ordenadas = merge_sort_obras(obras)
+    
+
+    escrever_obras_em_arquivo(obras_ordenadas, "obras.txt")
+    
+    obras_lidas = ler_obras_de_arquivo("obras.txt")
+    for obra in obras_lidas:
+        print(obra)
